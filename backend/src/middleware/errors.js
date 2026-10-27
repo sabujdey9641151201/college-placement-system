@@ -1,0 +1,1 @@
+module.exports=(err,req,res,next)=>{console.error(err);if(err.code==='ER_DUP_ENTRY')return res.status(409).json({error:'A record with those details already exists'});if(err.code==='LIMIT_FILE_SIZE')return res.status(413).json({error:'Resume must be 5 MB or smaller'});res.status(err.status||500).json({error:err.status?err.message:'Internal server error'})};

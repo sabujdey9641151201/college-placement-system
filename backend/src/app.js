@@ -1,0 +1,4 @@
+const express=require('express'),helmet=require('helmet'),cors=require('cors'),cookieParser=require('cookie-parser');
+const app=express();app.disable('x-powered-by');app.set('trust proxy',1);app.use(helmet({crossOriginResourcePolicy:{policy:'same-site'}}));app.use(cors({origin:process.env.FRONTEND_ORIGIN,credentials:true,methods:['GET','POST','PUT','PATCH','DELETE','OPTIONS'],allowedHeaders:['Content-Type','X-Requested-With']}));app.use(express.json({limit:'100kb'}));app.use(cookieParser());
+app.use('/api', (req,res,next)=>{if(!['GET','HEAD','OPTIONS'].includes(req.method)){if(req.get('Origin')!==process.env.FRONTEND_ORIGIN||req.get('X-Requested-With')!=='XMLHttpRequest')return res.status(403).json({error:'Request origin check failed'})}next()});
+app.get('/api/health',(req,res)=>res.json({ok:true}));app.use('/api/auth',require('./routes/auth'));app.use('/api',require('./routes/portal'));app.use(require('./middleware/errors'));module.exports=app;

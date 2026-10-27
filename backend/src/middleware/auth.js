@@ -1,0 +1,4 @@
+const jwt=require('jsonwebtoken'),db=require('../db');
+async function auth(req,res,next){try{const raw=req.cookies?.placement_session||(/^Bearer /.test(req.headers.authorization||'')?req.headers.authorization.slice(7):null);if(!raw)return res.status(401).json({error:'Authentication required'});const claims=jwt.verify(raw,process.env.JWT_SECRET);const [rows]=await db.execute('SELECT id,name,email,role,token_version,is_active FROM users WHERE id=?',[claims.sub]);if(!rows.length||!rows[0].is_active||rows[0].token_version!==claims.ver)return res.status(401).json({error:'Session expired'});req.user=rows[0];next()}catch(e){return res.status(401).json({error:'Invalid or expired session'})}}
+const roles=(...allowed)=>(req,res,next)=>allowed.includes(req.user.role)?next():res.status(403).json({error:'You do not have permission for this action'});
+module.exports={auth,roles};
